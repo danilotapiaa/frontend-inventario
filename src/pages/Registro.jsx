@@ -88,7 +88,7 @@ export const Registro = () => {
         {/* Formulario */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl">
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm break-words">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm wrap-break-words">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span>{error}</span>
             </div>
