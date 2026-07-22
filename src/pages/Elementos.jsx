@@ -5,7 +5,6 @@ import {
   Search, 
   Plus, 
   FileSpreadsheet, 
-  Upload, 
   Pencil, 
   Trash2, 
   X, 
@@ -19,23 +18,18 @@ import {
 export const Elementos = () => {
   const { user, isAdmin } = useAuth();
 
-  // Estados de datos
   const [elementos, setElementos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
 
-  // Estados de búsqueda y filtrado
   const [buscar, setBuscar] = useState('');
   const [categoria, setCategoria] = useState('');
 
-  // Modales
   const [modalCrear, setModalCrear] = useState(false);
   const [modalEditar, setModalEditar] = useState(false);
-  const [modalImportar, setModalImportar] = useState(false);
   const [elementoSeleccionado, setElementoEditar] = useState(null);
 
-  // Formularios
   const [formData, setFormData] = useState({
     codigoBarras: '',
     nombre: '',
@@ -45,13 +39,10 @@ export const Elementos = () => {
     imagen: null
   });
 
-  const [archivoExcel, setArchivoExcel] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
 
-  // Categorías fijas de ejemplo
   const categoriasBase = ['Equipos de Cómputo', 'Mobiliario', 'Herramientas', 'Redes', 'General'];
 
-  // Cargar elementos desde el Backend
   const cargarElementos = async () => {
     setLoading(true);
     setError('');
@@ -78,7 +69,6 @@ export const Elementos = () => {
     cargarElementos();
   };
 
-  // Limpiar formularios
   const resetForm = () => {
     setFormData({
       codigoBarras: '',
@@ -91,13 +81,11 @@ export const Elementos = () => {
     setElementoEditar(null);
   };
 
-  // Comprobar si el usuario actual es dueño del registro o Administrador
   const puedeModificar = (item) => {
     if (isAdmin()) return true;
     return item.usuarioIdPropietario === user?.id;
   };
 
-  // --- CREAR ELEMENTO ---
   const handleCrearSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -134,7 +122,6 @@ export const Elementos = () => {
     }
   };
 
-  // --- EDITAR ELEMENTO ---
   const abrirModalEditar = (item) => {
     setElementoEditar(item);
     setFormData({
@@ -183,7 +170,6 @@ export const Elementos = () => {
     }
   };
 
-  // --- ELIMINAR ELEMENTO ---
   const handleEliminar = async (item) => {
     if (!window.confirm(`¿Estás seguro de eliminar el elemento "${item.nombre}"?`)) return;
 
@@ -203,7 +189,6 @@ export const Elementos = () => {
     }
   };
 
-  // --- EXPORTAR A EXCEL ---
   const handleExportarExcel = async () => {
     try {
       const params = {};
@@ -226,37 +211,6 @@ export const Elementos = () => {
     }
   };
 
-  // --- IMPORTAR DESDE EXCEL ---
-  const handleImportarSubmit = async (e) => {
-    e.preventDefault();
-    if (!archivoExcel) {
-      setError('Por favor seleccione un archivo Excel (.xlsx) o CSV.');
-      return;
-    }
-
-    setError('');
-    setMensajeExito('');
-    setSubiendo(true);
-
-    try {
-      const payload = new FormData();
-      payload.append('archivo', archivoExcel);
-
-      await api.post('/elementos/importar', payload, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      setMensajeExito('Carga masiva procesada e importada con éxito.');
-      setModalImportar(false);
-      setArchivoExcel(null);
-      cargarElementos();
-    } catch (err) {
-      setError(err.response?.data?.message || 'El archivo cargado contiene errores de formato o códigos duplicados.');
-    } finally {
-      setSubiendo(false);
-    }
-  };
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Encabezado */}
@@ -266,7 +220,6 @@ export const Elementos = () => {
           <p className="text-slate-400 text-sm mt-1">Gestión maestro de activos físicos del sistema</p>
         </div>
 
-        {/* Botones de Acción */}
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={handleExportarExcel}
@@ -274,14 +227,6 @@ export const Elementos = () => {
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>Exportar Excel</span>
-          </button>
-
-          <button
-            onClick={() => setModalImportar(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-sm transition-all"
-          >
-            <Upload className="w-4 h-4" />
-            <span>Importar Masivo</span>
           </button>
 
           <button
@@ -315,7 +260,7 @@ export const Elementos = () => {
         </div>
       )}
 
-      {/* Barra de Filtros y Búsqueda */}
+      {/* Filtros */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
         <form onSubmit={handleSearchSubmit} className="w-full md:w-96 relative">
           <input
@@ -346,7 +291,7 @@ export const Elementos = () => {
         </div>
       </div>
 
-      {/* Tabla de Resultados */}
+      {/* Tabla */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         {loading ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center gap-3">
@@ -355,7 +300,7 @@ export const Elementos = () => {
           </div>
         ) : elementos.length === 0 ? (
           <div className="p-12 text-center text-slate-500">
-            No se encontraron elementos registrados con los filtros aplicados.
+            No se encontraron elementos registrados.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -419,16 +364,14 @@ export const Elementos = () => {
                           <button
                             onClick={() => abrirModalEditar(item)}
                             disabled={!editable}
-                            className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
-                            title={editable ? "Editar Elemento" : "No eres propietario de este bien"}
+                            className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors disabled:opacity-30"
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleEliminar(item)}
                             disabled={!editable}
-                            className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
-                            title={editable ? "Eliminar Elemento" : "No eres propietario de este bien"}
+                            className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -443,7 +386,7 @@ export const Elementos = () => {
         )}
       </div>
 
-      {/* --- MODAL CREAR ELEMENTO --- */}
+      {/* Modal Crear */}
       {modalCrear && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-6">
@@ -460,7 +403,7 @@ export const Elementos = () => {
                   required
                   value={formData.codigoBarras}
                   onChange={(e) => setFormData({ ...formData, codigoBarras: e.target.value })}
-                  placeholder="Ej: 7861001234567"
+                  placeholder="Ej: 786100000000"
                   className="w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500"
                 />
               </div>
@@ -472,7 +415,7 @@ export const Elementos = () => {
                   required
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  placeholder="Ej: Laptop HP ProBook"
+                  placeholder="Ej: Monitor LED 27 pulgadas"
                   className="w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500"
                 />
               </div>
@@ -513,18 +456,8 @@ export const Elementos = () => {
                   rows={2}
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                  placeholder="Detalles adicionales del bien..."
+                  placeholder="Detalles opcionales..."
                   className="w-full py-2.5 px-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Imagen del Activo (Opcional)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFormData({ ...formData, imagen: e.target.files[0] })}
-                  className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-indigo-400 hover:file:bg-slate-700"
                 />
               </div>
 
@@ -549,7 +482,7 @@ export const Elementos = () => {
         </div>
       )}
 
-      {/* --- MODAL EDITAR ELEMENTO --- */}
+      {/* Modal Editar */}
       {modalEditar && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-6">
@@ -633,49 +566,6 @@ export const Elementos = () => {
                   className="px-4 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl text-sm hover:bg-indigo-500 disabled:opacity-50"
                 >
                   {subiendo ? 'Actualizando...' : 'Actualizar Elemento'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* --- MODAL IMPORTAR EXCEL --- */}
-      {modalImportar && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h3 className="text-xl font-bold text-white">Importar Lote Excel</h3>
-              <button onClick={() => setModalImportar(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
-            </div>
-
-            <form onSubmit={handleImportarSubmit} className="space-y-4">
-              <div className="p-4 border-2 border-dashed border-slate-800 rounded-2xl text-center bg-slate-950/50">
-                <FileSpreadsheet className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
-                <p className="text-xs text-slate-400 mb-3">Selecciona un archivo .xlsx o .csv estructurado</p>
-                <input
-                  type="file"
-                  accept=".xlsx, .csv"
-                  required
-                  onChange={(e) => setArchivoExcel(e.target.files[0])}
-                  className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-emerald-400 hover:file:bg-slate-700"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setModalImportar(false)}
-                  className="px-4 py-2.5 bg-slate-800 text-slate-300 font-semibold rounded-xl text-sm hover:bg-slate-700"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={subiendo}
-                  className="px-4 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl text-sm hover:bg-emerald-500 disabled:opacity-50"
-                >
-                  {subiendo ? 'Procesando...' : 'Iniciar Carga'}
                 </button>
               </div>
             </form>
