@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { 
   Search, 
   Plus, 
-  FileSpreadsheet, 
   Pencil, 
   Trash2, 
   X, 
@@ -189,28 +188,6 @@ export const Elementos = () => {
     }
   };
 
-  const handleExportarExcel = async () => {
-    try {
-      const params = {};
-      if (buscar.trim()) params.buscar = buscar.trim();
-
-      const response = await api.get('/elementos/exportar', {
-        params,
-        responseType: 'blob'
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Inventario_Bienes_${new Date().toISOString().slice(0, 10)}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      setError('Ocurrió un error al generar y descargar el archivo Excel.');
-    }
-  };
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Encabezado */}
@@ -220,15 +197,7 @@ export const Elementos = () => {
           <p className="text-slate-400 text-sm mt-1">Gestión maestro de activos físicos del sistema</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={handleExportarExcel}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-600/20 font-semibold rounded-xl text-sm transition-all"
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>Exportar Excel</span>
-          </button>
-
+        <div className="flex items-center gap-3">
           <button
             onClick={() => { resetForm(); setModalCrear(true); }}
             className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-indigo-600/20"
