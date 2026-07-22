@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Package, ShieldCheck, LogOut, User as UserIcon } from 'lucide-react';
+import { Package, ShieldCheck, LogOut, User as UserIcon, Shield } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, logout, isAdmin } = useAuth();
@@ -82,6 +82,18 @@ export const Navbar = () => {
                 </span>
               </div>
             </div>
+
+            <Link
+              to="/seguridad"
+              className={`p-2 rounded-lg transition-colors ${
+                isActive('/seguridad')
+                  ? 'bg-slate-800 text-indigo-400'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+              title="Seguridad de la cuenta"
+            >
+              <Shield className="w-5 h-5" />
+            </Link>
 
             <button
               onClick={handleLogout}

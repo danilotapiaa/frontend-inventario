@@ -9,6 +9,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Elementos } from './pages/Elementos';
 import { Revisiones } from './pages/Revisiones';
 import { AuditoriaDetalle } from './pages/AuditoriaDetalle';
+import { Seguridad } from './pages/Seguridad';
+import { OAuthCallback } from './pages/OAuthCallback';
 
 const MainLayout = () => {
   return (
@@ -28,6 +30,7 @@ export function App() {
         {/* Rutas Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
 
         {/* Rutas Protegidas */}
         <Route element={<ProtectedRoute />}>
@@ -36,6 +39,7 @@ export function App() {
             <Route path="/elementos" element={<Elementos />} />
             <Route path="/revisiones" element={<Revisiones />} />
             <Route path="/revisiones/:id" element={<AuditoriaDetalle />} />
+            <Route path="/seguridad" element={<Seguridad />} />
           </Route>
         </Route>
 

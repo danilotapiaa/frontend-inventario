@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+export const API_BASE_URL = 'http://localhost:5000/api'; // Endpoint de tu backend .NET 10
+
 const api = axios.create({
-  baseURL: 'http://localhost:5051/api', // Endpoint de tu backend .NET 10
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
