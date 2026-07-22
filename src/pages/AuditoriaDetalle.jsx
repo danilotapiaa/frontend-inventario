@@ -7,7 +7,10 @@ import {
   AlertCircle, 
   Clock, 
   Lock, 
-  FileText
+  FileText,
+  Scan,
+  AlertTriangle,
+  Barcode
 } from 'lucide-react';
 
 export const AuditoriaDetalle = () => {
@@ -17,6 +20,14 @@ export const AuditoriaDetalle = () => {
   const [revision, setRevision] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [alertaConflicto, setAlertaConflicto] = useState('');
+  const [mensajeExito, setMensajeExito] = useState('');
+
+  // Escaneo manual de código de barras
+  const [codigoInput, setCodigoInput] = useState('');
+  const [procesandoCodigo, setProcesandoCodigo] = useState(false);
+  const [itemsEscaneados, setItemsEscaneados] = useState([]);
+
   const [finalizando, setFinalizando] = useState(false);
   const [resultadoFinal, setResultadoFinal] = useState(null);
 
@@ -36,6 +47,43 @@ export const AuditoriaDetalle = () => {
   useEffect(() => {
     cargarDetalle();
   }, [id]);
+
+  // Procesar escaneo manual de código de barras
+  const handleEscanear = async (e) => {
+    e.preventDefault();
+    if (!codigoInput.trim()) return;
+
+    setError('');
+    setAlertaConflicto('');
+    setMensajeExito('');
+    setProcesandoCodigo(true);
+
+    const codigo = codigoInput.trim();
+
+    try {
+      await api.post(`/revisiones/${id}/escanear`, { codigoBarras: codigo });
+
+      setMensajeExito(`Ítem con código ${codigo} registrado correctamente.`);
+      setItemsEscaneados((prev) => [
+        { codigoBarras: codigo, fechaEscaneo: new Date().toLocaleTimeString() },
+        ...prev
+      ]);
+      setCodigoInput('');
+    } catch (err) {
+      if (err.response?.status === 409) {
+        // Conflicto semántico: ya fue contabilizado en esta sesión
+        setAlertaConflicto(`El código de barras "${codigo}" ya fue escaneado previamente en esta auditoría.`);
+      } else if (err.response?.status === 404) {
+        setError(`El código de barras "${codigo}" no existe en el catálogo maestro de inventario.`);
+      } else if (err.response?.status === 400) {
+        setError('La sesión de auditoría ya no está en curso.');
+      } else {
+        setError('Error al procesar el código de barras.');
+      }
+    } finally {
+      setProcesandoCodigo(false);
+    }
+  };
 
   const handleFinalizar = async () => {
     if (!window.confirm('¿Deseas clausurar definitivamente esta auditoría? Una vez cerrada no se podrá modificar.')) return;
@@ -68,7 +116,7 @@ export const AuditoriaDetalle = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Botón regresar */}
+      {/* Volver */}
       <button
         onClick={() => navigate('/revisiones')}
         className="flex items-center gap-2 text-slate-400 hover:text-white text-sm font-medium transition-colors"
@@ -76,13 +124,6 @@ export const AuditoriaDetalle = () => {
         <ArrowLeft className="w-4 h-4" />
         <span>Volver a Auditorías</span>
       </button>
-
-      {error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm">
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
 
       {/* Header Info */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -102,7 +143,6 @@ export const AuditoriaDetalle = () => {
           <p className="text-xs font-mono text-slate-400">UUID: {revision?.id}</p>
         </div>
 
-        {/* Botón Finalizar */}
         {revision?.estado === 'EnCurso' && (
           <button
             onClick={handleFinalizar}
@@ -118,6 +158,76 @@ export const AuditoriaDetalle = () => {
           </button>
         )}
       </div>
+
+      {/* Formulario de Escaneo por Código de Barras (Solo si está EnCurso) */}
+      {revision?.estado === 'EnCurso' && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <Barcode className="w-5 h-5 text-indigo-400" />
+            <span>Registro de Código de Barras</span>
+          </h2>
+
+          <form onSubmit={handleEscanear} className="flex gap-3">
+            <input
+              type="text"
+              required
+              value={codigoInput}
+              onChange={(e) => setCodigoInput(e.target.value)}
+              placeholder="Ingrese o escanee el código de barras..."
+              className="flex-1 py-3 px-4 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"
+            />
+            <button
+              type="submit"
+              disabled={procesandoCodigo || !codigoInput.trim()}
+              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 flex items-center gap-2"
+            >
+              {procesandoCodigo ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Scan className="w-4 h-4" />
+              )}
+              <span>Registrar</span>
+            </button>
+          </form>
+
+          {/* Notificaciones del Escaneo */}
+          {mensajeExito && (
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2 text-emerald-400 text-xs font-medium">
+              <CheckCircle className="w-4 h-4 shrink-0" />
+              <span>{mensajeExito}</span>
+            </div>
+          )}
+
+          {alertaConflicto && (
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2 text-amber-400 text-xs font-medium">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>{alertaConflicto}</span>
+            </div>
+          )}
+
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-2 text-red-400 text-xs font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Historial de Ítems Procesados en Tiempo Real */}
+      {itemsEscaneados.length > 0 && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-3">
+          <h3 className="text-sm font-bold text-slate-300">Ítems Procesados en esta Sesión ({itemsEscaneados.length})</h3>
+          <div className="divide-y divide-slate-800 max-h-48 overflow-y-auto pr-2">
+            {itemsEscaneados.map((item, index) => (
+              <div key={index} className="py-2 flex items-center justify-between text-xs">
+                <span className="font-mono text-indigo-400 font-semibold">{item.codigoBarras}</span>
+                <span className="text-slate-500">{item.fechaEscaneo}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Resumen de la Auditoría */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -161,8 +271,8 @@ export const AuditoriaDetalle = () => {
           ) : (
             <p className="text-sm text-slate-400">
               {revision?.estado === 'EnCurso'
-                ? 'La cobertura total y el conteo de elementos se calcularán automáticamente al momento de presionar "Clausurar y Finalizar Sesión".'
-                : 'Esta auditoría ha sido clausurada.'}
+                ? 'Ingresa los códigos de barras de los bienes encontrados. Al finalizar, la cobertura total se calculará de forma automática.'
+                : 'Esta auditoría ha sido clausurada de forma permanente.'}
             </p>
           )}
         </div>

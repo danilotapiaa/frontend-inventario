@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { Package, ClipboardList, ShieldCheck, ArrowRight, Layers, ScanLine } from 'lucide-react';
+import { ArrowRight, Layers, ScanLine } from 'lucide-react';
 
 export const Dashboard = () => {
   const { user, isAdmin } = useAuth();
@@ -17,7 +17,7 @@ export const Dashboard = () => {
             ¡Bienvenido/a al Sistema!
           </h1>
           <p className="text-slate-400 text-base mt-2">
-            Plataforma para la gestión centralizada de activos de inventario y ejecución de auditorías físicas mediante escaneo de código de barras.
+            Plataforma para la gestión centralizada de activos de inventario y ejecución de auditorías físicas.
           </p>
         </div>
       </div>
@@ -25,7 +25,7 @@ export const Dashboard = () => {
       {/* Accesos Rápidos */}
       <div>
         <h2 className="text-lg font-bold text-white mb-4">Acciones Rápidas</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Card Elementos */}
           <Link
             to="/elementos"
@@ -39,7 +39,7 @@ export const Dashboard = () => {
                 Catálogo de Elementos
               </h3>
               <p className="text-slate-400 text-sm mt-2">
-                Consulta, registra y gestiona los activos físicos. Carga de imágenes y exportación a Excel.
+                Consulta, registra y gestiona los activos físicos del sistema con soporte para subida de imágenes.
               </p>
             </div>
             <div className="flex items-center gap-2 text-indigo-400 text-sm font-semibold mt-6">
@@ -61,38 +61,14 @@ export const Dashboard = () => {
                 Auditorías / Revisiones
               </h3>
               <p className="text-slate-400 text-sm mt-2">
-                Inicia sesiones de auditoría física y escanea bienes mediante cámara en tiempo real.
+                Inicia sesiones de auditoría física y realiza el registro de activos mediante código de barras.
               </p>
             </div>
             <div className="flex items-center gap-2 text-emerald-400 text-sm font-semibold mt-6">
-              <span>Iniciar Escaneo</span>
+              <span>Iniciar Auditoría</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
-
-          {/* Card Usuarios (Solo visible para Admin) */}
-          {isAdmin() && (
-            <Link
-              to="/usuarios"
-              className="group bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-amber-500/5 flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">
-                  Gestión de Usuarios
-                </h3>
-                <p className="text-slate-400 text-sm mt-2">
-                  Panel exclusivo de administradores para ver y gestionar cuentas de usuario en el sistema.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-amber-400 text-sm font-semibold mt-6">
-                <span>Administrar Usuarios</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-          )}
         </div>
       </div>
     </div>
