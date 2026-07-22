@@ -8,7 +8,7 @@ export const Dashboard = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Saludo Principal */}
-      <div className="bg-gradient-to-r from-indigo-900/40 via-slate-900 to-slate-900 border border-indigo-500/20 rounded-3xl p-8 relative overflow-hidden">
+      <div className="bg-linear-to-r from-indigo-900/40 via-slate-900 to-slate-900 border border-indigo-500/20 rounded-3xl p-8 relative overflow-hidden">
         <div className="relative z-10 max-w-2xl">
           <span className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-full text-xs font-semibold uppercase tracking-wider">
             {isAdmin() ? 'Panel Administrador' : 'Panel de Control'}

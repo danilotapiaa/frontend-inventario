@@ -35,9 +35,9 @@ export const Registro = () => {
     e.preventDefault();
     setError('');
 
-    // Validación previa del Módulo 10 en el Frontend
+    // Validación matemática previa en el Frontend (Módulo 10)
     if (!validarCedulaEcuatoriana(formData.cedula)) {
-      setError('La cédula ingresada no es una cédula ecuatoriana válida (Error Módulo 10).');
+      setError('La cédula ingresada no es una cédula ecuatoriana válida.');
       setCedulaValida(false);
       return;
     }
@@ -48,10 +48,25 @@ export const Registro = () => {
       await api.post('/auth/registro', formData);
       navigate('/login', { state: { registroExitoso: true } });
     } catch (err) {
+      console.error('Detalle del error en petición HTTP:', err);
+
       if (err.response?.status === 409) {
-        setError('El correo electrónico o la cédula ya se encuentran registrados.');
+        setError('El correo electrónico o la cédula ya se encuentran registrados en el sistema.');
+      } else if (err.response?.data) {
+        const data = err.response.data;
+        if (typeof data === 'string') {
+          setError(data);
+        } else if (data.errors) {
+          // Captura mensajes de validación devueltos por ASP.NET Core
+          const mensajes = Object.values(data.errors).flat().join(' | ');
+          setError(mensajes || 'Error de validación en los datos enviados.');
+        } else {
+          setError(data.message || data.title || 'Error devuelto por el servidor.');
+        }
+      } else if (err.message) {
+        setError(`Error de comunicación con el backend: ${err.message}. Verifica que el API esté en http://localhost:5051`);
       } else {
-        setError(err.response?.data?.message || 'Error al procesar el registro.');
+        setError('No se pudo completar el registro. Intente de nuevo.');
       }
     } finally {
       setLoading(false);
@@ -61,7 +76,7 @@ export const Registro = () => {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4">
       <div className="max-w-md w-full">
-        {/* Header */}
+        {/* Encabezado */}
         <div className="text-center mb-8">
           <div className="inline-flex p-3 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl text-indigo-400 mb-4">
             <UserPlus className="w-10 h-10" />
@@ -73,14 +88,14 @@ export const Registro = () => {
         {/* Formulario */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl">
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm break-words">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Cédula con Validación visual */}
+            {/* Cédula con indicación del Módulo 10 */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                 Cédula Ecuatoriana
@@ -96,7 +111,7 @@ export const Registro = () => {
                   required
                   value={formData.cedula}
                   onChange={handleChange}
-                  placeholder="1712345678"
+                  placeholder="0504883307"
                   className={`w-full pl-10 pr-10 py-3 bg-slate-950 border rounded-xl text-white placeholder-slate-500 focus:outline-none text-sm transition-all ${
                     cedulaValida === true 
                       ? 'border-emerald-500/50 focus:border-emerald-500' 
@@ -116,9 +131,6 @@ export const Registro = () => {
                   </div>
                 )}
               </div>
-              {cedulaValida === false && (
-                <span className="text-xs text-red-400 mt-1 block">Cédula no válida</span>
-              )}
             </div>
 
             {/* Nombre Completo */}
@@ -136,7 +148,7 @@ export const Registro = () => {
                   required
                   value={formData.nombre}
                   onChange={handleChange}
-                  placeholder="Juan Pérez"
+                  placeholder="Danilo Tapia"
                   className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm transition-all"
                 />
               </div>
@@ -157,7 +169,7 @@ export const Registro = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="correo@ejemplo.com"
+                  placeholder="djtapia7@espe.edu.ec"
                   className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm transition-all"
                 />
               </div>
